@@ -15,9 +15,10 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
+	//"flag"
 	"log"
-	"net"
+	//"net"
 	"os"
 	"os/exec"
 	"io"
@@ -32,10 +33,12 @@ func main() {
 		log.Fatalln( "Root permissions required." )
 	}
 
-	fmt.Println( net.Interfaces() )
+	conf := os.Args[1]
+
+	//fmt.Println( net.Interfaces() )
 
 	openvpn := exec.Command( "openvpn",
-		"--config","/etc/openvpn/west.conf" )
+		"--config",conf )
 	stdout,_ := openvpn.StdoutPipe()
 	stderr,_ := openvpn.StderrPipe()
 	go io.Copy( os.Stdout,stdout )
