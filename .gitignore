@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io/api/vim,go
 
+vpnctl
+
 ### Vim ###
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
