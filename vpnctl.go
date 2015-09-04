@@ -32,10 +32,10 @@ func main() {
 
 	switch cmd {
 	case "up":
-		chkroot()
+		chkroot("up")
 		vpnup(conf)
 	case "down":
-		chkroot()
+		chkroot("down")
 		//vpndown( conf )
 	default:
 		vpnstat()
@@ -46,9 +46,9 @@ func main() {
 	}
 }
 
-func chkroot() {
+func chkroot(cmd string) {
 	if os.Geteuid() != 0 {
-		log.Fatalln("Root permissions are required for this command.")
+		log.Fatalf("%v: Root permissions are required for this command.", cmd)
 	}
 }
 
@@ -58,12 +58,17 @@ func vpnup(conf string) {
 	openvpn.Stderr = os.Stderr
 
 	err := openvpn.Start()
-	chk(err)
+	if err != nil {
+		log.Fatalf("vpnup: Failed to start openvpn: %v", err)
+	}
 }
 
 func vpnstat() {
 	ifs, err := net.Interfaces()
-	chk(err)
+	if err != nil {
+		log.Fatalf("vpnstat: Failed to get interface info: %v", err)
+	}
+
 	parseInterfaces(ifs)
 }
 
@@ -71,12 +76,6 @@ func parseInterfaces(ifs []net.Interface) {
 	// tun, up, point-to-point -- what need
 	for n := 0; n < len(ifs); n++ {
 		fmt.Println(ifs[n].Name)
-	}
-}
-
-func chk(err error) {
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
