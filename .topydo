@@ -1,0 +1,43 @@
+[topydo]
+default_command             = ls
+filename                    = TODO
+archive_filename            = DONE
+colors                      = 1
+highlight_projects_contexts = 1
+identifiers                 = linenumber ; or: text
+
+[ls]
+;hide_tags                   = id,p,ical
+;indent                      = 0
+;list_limit                  = -1
+;
+;[tags]
+;tag_start                   = t
+;tag_due                     = due
+;tag_star                    = star
+;
+[sort]
+keep_sorted                 = 1
+sort_string                 = desc:importance,due,desc:priority
+
+; For calculating importance
+;ignore_weekends             = 1
+
+[dep]
+; Add parent projects when adding sub todo items
+;append_parent_projects      = 0
+; Add parent contexts when adding sub todo items
+;append_parent_contexts      = 0
+
+[colorscheme]
+; Configure colorscheme. Accepted values are: black, [light-]red, [light-]green,
+; [light-]yellow, [light-]blue, [light-]magenta, [light-]cyan, white
+; [light-]gray, darkgray or numbers from 0 to 255. When number is specified color
+; is matched from Xterm color chart available here:
+; http://en.wikipedia.org/wiki/File:Xterm_256color_chart.svg
+
+priority_colors = A:cyan,B:yellow,C:blue
+project_color = red
+context_color = magenta
+metadata_color = green
+link_color = light-cyan
