@@ -40,10 +40,6 @@ func main() {
 	default:
 		vpnstat()
 	}
-
-	for {
-		time.Sleep(10000)
-	}
 }
 
 func chkroot(cmd string) {
