@@ -15,6 +15,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -23,16 +24,33 @@ import (
 )
 
 func main() {
-	conf := os.Args[1]
-	cmd := os.Args[2]
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Usage: %v [command]
+
+vpnctl is a wrapper around OpenVPN.
+
+If no command is specified, status is displayed.
+
+Commands:
+	up:	Bring OpenVPN up.
+	down:	Bring OpenVPN down.
+
+Options:
+`, os.Args[0])
+		flag.PrintDefaults()
+	}
+	conf := flag.String("conf", "", "The OpenVPN config to use.")
+	flag.Parse()
+
+	cmd := flag.Arg(1)
 
 	switch cmd {
 	case "up":
 		chkroot("up")
-		vpnup(conf)
+		vpnup(*conf)
 	case "down":
 		chkroot("down")
-		//vpndown( conf )
+		//vpndown(*conf)
 	default:
 		vpnstat()
 	}
