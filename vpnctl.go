@@ -16,7 +16,6 @@ package main
 
 import (
 	"fmt"
-	//"flag"
 	"io"
 	"log"
 	"net"
@@ -24,9 +23,6 @@ import (
 	"os/exec"
 	"time"
 )
-
-// Need to check for current tun devices, then assign the next highest
-// one to the current attempt. Using same, openvpn initialization fails.
 
 func main() {
 
@@ -45,7 +41,7 @@ func main() {
 	}
 
 	for {
-		time.Sleep(10000)
+		time.Sleep(1000000000)
 	}
 }
 
@@ -83,7 +79,7 @@ func filterTuns(ifs []net.Interface) []net.Interface {
 		name := netif.Name
 
 		isTun := len(name) > 2 && name[0:3] == "tun" &&
-			netif.Flags&net.FlagPointToPoint > 0
+		         netif.Flags&net.FlagPointToPoint > 0
 
 		if isTun {
 			tuns = append(tuns, netif)
