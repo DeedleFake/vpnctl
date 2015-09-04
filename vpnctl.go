@@ -15,51 +15,76 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	//"flag"
 	"log"
-	//"net"
+	"net"
 	"os"
 	"os/exec"
 	"io"
-	//"time"
+	"time"
 )
 
 // Need to check for current tun devices, then assign the next highest
 // one to the current attempt. Using same, openvpn initialization fails.
 
 func main() {
-	if os.Geteuid() != 0 {
-		log.Fatalln( "Root permissions required." )
+
+	conf := os.Args[ 1 ]
+	cmd := os.Args[ 2 ]
+
+	switch cmd {
+	case "up":
+		chkroot()
+		vpnup( conf )
+	case "down":
+		chkroot()
+		//vpndown( conf )
+	default:
+		vpnstat()
 	}
-
-	conf := os.Args[1]
-
-	//fmt.Println( net.Interfaces() )
-
-	openvpn := exec.Command( "openvpn",
-		"--config",conf )
-	stdout,_ := openvpn.StdoutPipe()
-	stderr,_ := openvpn.StderrPipe()
-	go io.Copy( os.Stdout,stdout )
-	go io.Copy( os.Stderr,stderr )
-	err := openvpn.Start()
-	if err != nil {
-		log.Fatal( err )
-	}
-
-	//fmt.Print( "Opening VPN connection." )
-	//// TODO timeout should not be hard coded
-	//for t := 0; t < 5; t++ {
-	//	if verifyTunnel() {
-	//		// why on earth does this not work?
-	//		break
-	//	}
-	//	time.Sleep( 1 )
-	//	fmt.Print( "." )
-	//}
 
 	for {
+		time.Sleep(10000)
+	}
+}
+
+func chkroot() {
+	if os.Geteuid() != 0 {
+		log.Fatalln( "Root permissions are required for this command." )
+	}
+}
+
+func vpnup( conf string ) {
+
+	openvpn := exec.Command( "openvpn","--config",conf )
+
+	stdout,_ := openvpn.StdoutPipe()
+	stderr,_ := openvpn.StderrPipe()
+
+	go io.Copy( os.Stdout,stdout )
+	go io.Copy( os.Stderr,stderr )
+
+	err := openvpn.Start()
+	chk( err )
+}
+
+func vpnstat() {
+	ifs,err := net.Interfaces();
+	chk( err )
+	parseInterfaces( ifs )
+}
+
+func parseInterfaces( ifs []net.Interface ){
+	// tun, up, point-to-point -- what need
+	for n := 0; n < len( ifs ); n++ {
+		fmt.Println( ifs[ n ].Name )
+	}
+}
+
+func chk( err error ) {
+	if err != nil {
+		log.Fatal( err )
 	}
 }
 
