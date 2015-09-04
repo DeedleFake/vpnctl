@@ -22,9 +22,6 @@ import (
 	"os/exec"
 )
 
-// Need to check for current tun devices, then assign the next highest
-// one to the current attempt. Using same, openvpn initialization fails.
-
 func main() {
 	conf := os.Args[1]
 	cmd := os.Args[2]
@@ -64,14 +61,24 @@ func vpnstat() {
 		log.Fatalf("vpnstat: Failed to get interface info: %v", err)
 	}
 
-	parseInterfaces(ifs)
+	tuns := filterTuns(ifs)
+	fmt.Println(tuns)
 }
 
-func parseInterfaces(ifs []net.Interface) {
-	// tun, up, point-to-point -- what need
+func filterTuns(ifs []net.Interface) []net.Interface {
+	tuns := make([]net.Interface, 0, len(ifs))
 	for n := 0; n < len(ifs); n++ {
-		fmt.Println(ifs[n].Name)
+		netif := ifs[n]
+		name := netif.Name
+
+		isTun := len(name) > 2 && name[0:3] == "tun" &&
+			netif.Flags&net.FlagPointToPoint > 0
+
+		if isTun {
+			tuns = append(tuns, netif)
+		}
 	}
+	return tuns
 }
 
 // vim: noet tw=72 ts=3 sw=3
