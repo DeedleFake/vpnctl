@@ -53,9 +53,9 @@ func vpnup(conf string) {
 	openvpn.Stdout = os.Stdout
 	openvpn.Stderr = os.Stderr
 
-	err := openvpn.Start()
+	err := openvpn.Run()
 	if err != nil {
-		log.Fatalf("vpnup: Failed to start openvpn: %v", err)
+		log.Fatalf("vpnup: openvpn failed: %v", err)
 	}
 }
 
