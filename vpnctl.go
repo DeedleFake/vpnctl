@@ -17,11 +17,11 @@ package main
 import (
 	"fmt"
 	//"flag"
+	"io"
 	"log"
 	"net"
 	"os"
 	"os/exec"
-	"io"
 	"time"
 )
 
@@ -30,13 +30,13 @@ import (
 
 func main() {
 
-	conf := os.Args[ 1 ]
-	cmd := os.Args[ 2 ]
+	conf := os.Args[1]
+	cmd := os.Args[2]
 
 	switch cmd {
 	case "up":
 		chkroot()
-		vpnup( conf )
+		vpnup(conf)
 	case "down":
 		chkroot()
 		//vpndown( conf )
@@ -51,40 +51,50 @@ func main() {
 
 func chkroot() {
 	if os.Geteuid() != 0 {
-		log.Fatalln( "Root permissions are required for this command." )
+		log.Fatalln("Root permissions are required for this command.")
 	}
 }
 
-func vpnup( conf string ) {
+func vpnup(conf string) {
 
-	openvpn := exec.Command( "openvpn","--config",conf )
+	openvpn := exec.Command("openvpn", "--config", conf)
 
-	stdout,_ := openvpn.StdoutPipe()
-	stderr,_ := openvpn.StderrPipe()
+	stdout, _ := openvpn.StdoutPipe()
+	stderr, _ := openvpn.StderrPipe()
 
-	go io.Copy( os.Stdout,stdout )
-	go io.Copy( os.Stderr,stderr )
+	go io.Copy(os.Stdout, stdout)
+	go io.Copy(os.Stderr, stderr)
 
 	err := openvpn.Start()
-	chk( err )
+	chk(err)
 }
 
 func vpnstat() {
-	ifs,err := net.Interfaces();
-	chk( err )
-	parseInterfaces( ifs )
+	ifs, err := net.Interfaces()
+	chk(err)
+	tuns := filterTuns(ifs)
+	fmt.Print(tuns)
 }
 
-func parseInterfaces( ifs []net.Interface ){
-	// tun, up, point-to-point -- what need
-	for n := 0; n < len( ifs ); n++ {
-		fmt.Println( ifs[ n ].Name )
+func filterTuns(ifs []net.Interface) []net.Interface {
+	tuns := make([]net.Interface, 0, len(ifs))
+	for n := 0; n < len(ifs); n++ {
+		netif := ifs[n]
+		name := netif.Name
+
+		isTun := len(name) > 2 && name[0:3] == "tun" &&
+			netif.Flags&net.FlagPointToPoint > 0
+
+		if isTun {
+			tuns = append(tuns, netif)
+		}
 	}
+	return tuns
 }
 
-func chk( err error ) {
+func chk(err error) {
 	if err != nil {
-		log.Fatal( err )
+		log.Fatal(err)
 	}
 }
 
