@@ -16,8 +16,6 @@ package main
 
 import (
 	"fmt"
-	//"flag"
-	"io"
 	"log"
 	"net"
 	"os"
@@ -56,12 +54,8 @@ func chkroot() {
 
 func vpnup(conf string) {
 	openvpn := exec.Command("openvpn", "--config", conf)
-
-	stdout, _ := openvpn.StdoutPipe()
-	stderr, _ := openvpn.StderrPipe()
-
-	go io.Copy(os.Stdout, stdout)
-	go io.Copy(os.Stderr, stderr)
+	openvpn.Stdout = os.Stdout
+	openvpn.Stderr = os.Stderr
 
 	err := openvpn.Start()
 	chk(err)
