@@ -21,7 +21,44 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"sort"
 )
+
+type Command struct {
+	Name string
+	Desc string
+
+	Run func(Config) error
+}
+
+type Config struct {
+	Config string
+}
+
+type CommandList struct {
+	cmds   []*Command
+	config Config
+}
+
+func (c *CommandList) Add(cmd *Command) {
+	c.cmds = append(c.cmds, cmd)
+	sort.Sort(c)
+}
+
+func (c *CommandList) Run(name string) error {
+}
+
+func (c *CommandList) Len() int {
+	return len(c.cmds)
+}
+
+func (c *CommandList) Swap(i1, i2 int) {
+	c.cmds[i1], c.cmds[i2] = c.cmds[i2], c.cmds[i1]
+}
+
+func (c *CommandList) Less(i1, i2 int) bool {
+	return c.cmds[i1].Name < c.cmds[i2].Name
+}
 
 func main() {
 	flag.Usage = func() {
@@ -39,7 +76,10 @@ Options:
 `, os.Args[0])
 		flag.PrintDefaults()
 	}
-	conf := flag.String("conf", "", "The OpenVPN config to use.")
+
+	var config Config
+	flag.StringVar(&config.Config, "conf", "", "The OpenVPN config to use.")
+
 	flag.Parse()
 
 	cmd := flag.Arg(1)
