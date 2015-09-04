@@ -16,60 +16,53 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
 	"os/exec"
-	"time"
 )
 
 func main() {
-
 	conf := os.Args[1]
 	cmd := os.Args[2]
 
 	switch cmd {
 	case "up":
-		chkroot()
+		chkroot("up")
 		vpnup(conf)
 	case "down":
-		chkroot()
+		chkroot("down")
 		//vpndown( conf )
 	default:
 		vpnstat()
 	}
-
-	for {
-		time.Sleep(1000000000)
-	}
 }
 
-func chkroot() {
+func chkroot(cmd string) {
 	if os.Geteuid() != 0 {
-		log.Fatalln("Root permissions are required for this command.")
+		log.Fatalf("%v: Root permissions are required for this command.", cmd)
 	}
 }
 
 func vpnup(conf string) {
-
 	openvpn := exec.Command("openvpn", "--config", conf)
+	openvpn.Stdout = os.Stdout
+	openvpn.Stderr = os.Stderr
 
-	stdout, _ := openvpn.StdoutPipe()
-	stderr, _ := openvpn.StderrPipe()
-
-	go io.Copy(os.Stdout, stdout)
-	go io.Copy(os.Stderr, stderr)
-
-	err := openvpn.Start()
-	chk(err)
+	err := openvpn.Run()
+	if err != nil {
+		log.Fatalf("vpnup: openvpn failed: %v", err)
+	}
 }
 
 func vpnstat() {
 	ifs, err := net.Interfaces()
-	chk(err)
+	if err != nil {
+		log.Fatalf("vpnstat: Failed to get interface info: %v", err)
+	}
+
 	tuns := filterTuns(ifs)
-	fmt.Print(tuns)
+	fmt.Println(tuns)
 }
 
 func filterTuns(ifs []net.Interface) []net.Interface {
@@ -79,19 +72,13 @@ func filterTuns(ifs []net.Interface) []net.Interface {
 		name := netif.Name
 
 		isTun := len(name) > 2 && name[0:3] == "tun" &&
-		         netif.Flags&net.FlagPointToPoint > 0
+			netif.Flags&net.FlagPointToPoint > 0
 
 		if isTun {
 			tuns = append(tuns, netif)
 		}
 	}
 	return tuns
-}
-
-func chk(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // vim: noet tw=72 ts=3 sw=3
