@@ -20,7 +20,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"time"
 )
 
 // Need to check for current tun devices, then assign the next highest
